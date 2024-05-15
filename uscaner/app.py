@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for
 import requests
+import subprocess
 
 app = Flask(__name__)
 
@@ -11,23 +12,15 @@ def index():
 def check_redirects():
     url = request.form['url']
 
-    # Vulnerability introduced: User input is directly inserted into the HTML result without proper escaping
-    result = f"The URL you entered is: <a href='{url}'>{url}</a>"
-
+    # Vulnerability introduced: Command Injection
     try:
-        response = requests.head(url, allow_redirects=True)
-        final_url = response.url
-        response_history = [f"{res.status_code}: {res.url}" for res in response.history]
-        response_history.append(f"{response.status_code}: {final_url}")
+        # Instead of using requests to fetch the URL, execute it as a shell command
+        result = subprocess.check_output(["curl", url], shell=False, text=True)
 
-        if final_url != url:
-            result += "<br>The URL redirects to: <a href='{final_url}'>{final_url}</a>"
-        else:
-            result += "<br>No redirects detected."
-
-        result += "<br>Response History:<br>" + "<br>".join(response_history)
-    except requests.exceptions.RequestException as e:
-        result += f"<br>An error occurred: {e}"
+        # Display the output
+        result += f"<br>The output of the command is: {result}"
+    except subprocess.CalledProcessError as e:
+        result = f"An error occurred: {e}"
 
     return render_template('result.html', result=result)
 
