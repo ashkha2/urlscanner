@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>URL Redirect Checker - Result</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>URL Redirect Checker - Result</h1>
+        <p>{{ result }}</p>
+        {% if response_history %}
+            <h2>Response History:</h2>
+            <ul>
+                {% for response in response_history %}
+                    <li>{{ response }}</li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+        <a href="/">Check another URL</a>
+    </div>
+</body>
+</html>
