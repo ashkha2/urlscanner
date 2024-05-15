@@ -10,6 +10,10 @@ def index():
 @app.route('/check_redirects', methods=['POST'])
 def check_redirects():
     url = request.form['url']
+
+    # Vulnerability introduced: User input is directly inserted into the HTML result without proper escaping
+    result = f"The URL you entered is: <a href='{url}'>{url}</a>"
+
     try:
         response = requests.head(url, allow_redirects=True)
         final_url = response.url
@@ -17,13 +21,13 @@ def check_redirects():
         response_history.append(f"{response.status_code}: {final_url}")
 
         if final_url != url:
-            result = f"The URL redirects to: {final_url}"
+            result += "<br>The URL redirects to: <a href='{final_url}'>{final_url}</a>"
         else:
-            result = "No redirects detected."
+            result += "<br>No redirects detected."
 
-        result += "<br><br>Response History:<br>" + "<br>".join(response_history)
+        result += "<br>Response History:<br>" + "<br>".join(response_history)
     except requests.exceptions.RequestException as e:
-        result = f"An error occurred: {e}"
+        result += f"<br>An error occurred: {e}"
 
     return render_template('result.html', result=result)
 
